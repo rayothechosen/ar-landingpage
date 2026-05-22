@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Auto Reader — Fluxo 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--g:#2ECC71;--gd:#27AE60;--gl:#E8F8F0;--dark:#1C1C1E;--gray:#6B7280;--border:#E5E7EB;--bg:#F4F5F7;--white:#fff}
+body{font-family:'Inter',sans-serif;background:#dde0e7;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:390px;height:844px;background:var(--bg);border-radius:40px;overflow:hidden;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.28)}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none;flex-direction:column;background:var(--bg);animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+/* Header */
+.header{padding:52px 20px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.header.center{justify-content:center}
+.back{width:36px;height:36px;border-radius:50%;background:var(--white);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.08);color:var(--dark)}
+.logo{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.logo .g{color:var(--g)}
+.logo .d{color:var(--dark)}
+
+/* Welcome banner */
+.welcome{margin:0 16px 16px;background:#E8EAED;border-radius:18px;padding:16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 6px rgba(0,0,0,.06);transition:all .22s ease;cursor:default}
+.welcome:hover{box-shadow:0 8px 24px rgba(0,0,0,.13);transform:scale(1.02)}
+.welcome-text h2{font-size:15px;font-weight:700;color:var(--dark)}
+.welcome-text p{font-size:12px;color:var(--gray);margin-top:2px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--g);display:inline-block;margin-right:5px}
+
+/* Menu */
+.menu-list{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.menu-card{display:flex;align-items:center;gap:14px;padding:15px 16px;border-radius:18px;cursor:pointer;transition:all .22s ease;background:var(--white);box-shadow:0 1px 5px rgba(0,0,0,.06)}
+.menu-card:hover{box-shadow:0 8px 24px rgba(46,204,113,.18);transform:scale(1.02)}
+.menu-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ic-green{background:var(--gl)}
+.ic-gray{background:#F3F4F6}
+.menu-text{flex:1}
+.menu-text h3{font-size:15px;font-weight:600;color:var(--dark)}
+.menu-text p{font-size:12px;color:var(--gray);margin-top:2px;line-height:1.4}
+.arrow{color:var(--g);font-size:20px;font-weight:700;line-height:1}
+
+/* Reading progress card — 100% */
+.reading-card{margin:10px 16px 4px;background:var(--white);border-radius:20px;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.07);transition:all .22s ease;cursor:pointer}
+.reading-card:hover{box-shadow:0 8px 28px rgba(46,204,113,.22);transform:scale(1.02)}
+.reading-top{padding:14px 16px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;background:#E8EAED}
+.reading-label{font-size:10px;font-weight:700;color:var(--gd);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.reading-title{font-size:15px;font-weight:700;color:var(--dark)}
+.reading-author{font-size:12px;color:var(--gray);margin-top:2px}
+.reading-badge-done{padding:5px 10px;border-radius:20px;background:var(--gl);color:var(--gd);font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0;border:1px solid rgba(46,204,113,.3)}
+.reading-progress{padding:12px 16px 14px;background:var(--white)}
+.rp-bar-wrap{background:#F3F4F6;border-radius:8px;height:8px;overflow:hidden;margin-bottom:8px}
+.rp-bar-fill-done{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--g),#1aaf5d);width:100%}
+.rp-meta{display:flex;justify-content:space-between;align-items:center}
+.rp-pct{font-size:13px;font-weight:700;color:var(--gd)}
+.rp-step{font-size:12px;color:var(--gray)}
+.reading-footer{padding:10px 16px 13px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#E8EAED}
+.rf-time{font-size:12px;color:var(--gray)}
+.rf-time span{font-weight:600;color:var(--dark)}
+.rf-pay{font-size:13px;font-weight:700;color:var(--gd)}
+.rf-tap{font-size:11px;color:var(--g);font-weight:600;display:flex;align-items:center;gap:4px}
+
+.footer{padding:14px;text-align:center;font-size:11px;color:#C1C5CD;flex-shrink:0;margin-top:auto}
+
+/* ===== SCREEN S8: RELATORIO ===== */
+.s8-header{padding:52px 20px 0;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.section-title{padding:14px 20px 4px}
+.section-title h2{font-size:18px;font-weight:700;color:var(--dark)}
+.section-title p{font-size:13px;color:var(--gray);margin-top:3px}
+
+/* PDF principal */
+.pdf-main-card{margin:14px 16px 0;background:var(--white);border-radius:20px;overflow:hidden;box-shadow:0 2px 14px rgba(46,204,113,.15);border:2px solid rgba(46,204,113,.25);transition:all .22s ease;cursor:pointer}
+.pdf-main-card:hover{box-shadow:0 8px 28px rgba(46,204,113,.25);transform:scale(1.02)}
+.pdf-main-top{padding:16px;display:flex;align-items:flex-start;gap:14px}
+.pdf-icon-wrap{width:52px;height:52px;border-radius:14px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pdf-info{flex:1}
+.pdf-new-badge{display:inline-block;background:var(--g);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px;letter-spacing:.3px}
+.pdf-filename{font-size:13px;font-weight:700;color:var(--dark);word-break:break-all;line-height:1.4}
+.pdf-meta{font-size:11px;color:var(--gray);margin-top:4px}
+.pdf-main-footer{padding:10px 16px 14px;border-top:1px solid var(--border);background:#FAFAFA;display:flex;align-items:center;justify-content:space-between}
+.pdf-size{font-size:12px;color:var(--gray)}
+.pdf-dl-btn{display:flex;align-items:center;gap:6px;padding:9px 18px;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s}
+.pdf-dl-btn:hover{background:var(--gd)}
+
+/* Divider */
+.divider-label{padding:16px 20px 8px;font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:6px}
+.divider-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Histórico list */
+.history-list{padding:0 16px;display:flex;flex-direction:column;gap:10px;padding-bottom:20px}
+.hist-card{background:var(--white);border-radius:16px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06);transition:all .22s ease;cursor:pointer}
+.hist-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.11);transform:scale(1.02)}
+.hist-inner{padding:13px 14px;display:flex;align-items:center;gap:12px}
+.hist-pdf-icon{width:42px;height:42px;border-radius:11px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hist-info{flex:1}
+.hist-book{font-size:13px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.hist-author{font-size:11px;color:var(--gray);margin-top:2px}
+.hist-date{font-size:11px;color:var(--gray);margin-top:2px}
+.hist-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.hist-value{font-size:13px;font-weight:700;color:var(--gd)}
+.hist-dl{width:32px;height:32px;border-radius:9px;background:var(--gl);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:background .2s}
+.hist-dl:hover{background:var(--g)}
+.hist-dl:hover svg{stroke:#fff}
+
+/* ===== SCREEN S9: ENVIAR ===== */
+.msg-box-wrap{margin:16px;background:var(--white);border-radius:16px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.msg-label{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.msg-textarea{width:100%;height:320px;border:1px solid var(--border);border-radius:12px;padding:12px;font-family:'Inter',sans-serif;font-size:13px;line-height:1.5;color:var(--dark);resize:none;background:#FAFAFA;outline:none}
+.msg-textarea:focus{border-color:var(--g);background:var(--white)}
+.send-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:14px;border:none;background:var(--g);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(46,204,113,.3)}
+.send-btn:hover{background:var(--gd);transform:translateY(-1px);box-shadow:0 6px 16px rgba(46,204,113,.4)}
+</style>
+</head>
+<body>
+<div class="phone">
+
+<!-- ===== S1: DASHBOARD ===== -->
+<div class="screen active" id="s1">
+  <div class="header center">
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+
+  <!-- Welcome banner -->
+  <div class="welcome">
+    <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0">
+      <img src="imgs/julia_trindade.png" alt="Julia Trindade" style="width:100%;height:100%;object-fit:cover;object-position:top">
+    </div>
+    <div class="welcome-text">
+      <h2>Bem-vinda de volta, Julia Trindade</h2>
+      <p><span class="status-dot"></span>Sua automacao esta ativa e monitorando</p>
+    </div>
+  </div>
+
+  <div class="menu-list">
+    <!-- Encontrar Autores -->
+    <div class="menu-card">
+      <div class="menu-icon ic-green">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none">
+          <path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#2ECC71" stroke-width="5.5" fill="none"/>
+          <circle cx="35" cy="34" r="8" fill="#1C1C1E"/>
+          <path d="M20 52c0-8.3 6.7-15 15-15 3.2 0 6.2 1 8.6 2.7" stroke="#1C1C1E" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <circle cx="56" cy="48" r="7.5" stroke="#1C1C1E" stroke-width="4" fill="none"/>
+          <line x1="61.5" y1="53.5" x2="66" y2="58" stroke="#1C1C1E" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="menu-text">
+        <h3>Encontrar Autores</h3>
+        <p>O sistema busca autores que precisam de beta reader automaticamente.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+
+    <!-- Feedback Automatico -->
+    <div class="menu-card">
+      <div class="menu-icon ic-green">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none">
+          <path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#2ECC71" stroke-width="5.5" fill="none"/>
+          <rect x="24" y="26" width="22" height="18" rx="3" fill="#1C1C1E"/>
+          <line x1="28" y1="31" x2="42" y2="31" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="28" y1="36" x2="42" y2="36" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="28" y1="41" x2="36" y2="41" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="52" cy="42" r="9" fill="#2ECC71"/>
+          <path d="M48.5 42l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="menu-text">
+        <h3>Feedback Automatico</h3>
+        <p>A IA analisa o livro e prepara o feedback pronto em ate 24h.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+
+    <!-- Trabalhos Aceitos -->
+    <div class="menu-card">
+      <div class="menu-icon ic-gray">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none">
+          <path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#9CA3AF" stroke-width="5.5" fill="none"/>
+          <rect x="26" y="22" width="26" height="32" rx="4" fill="#1C1C1E"/>
+          <line x1="31" y1="30" x2="47" y2="30" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="36" x2="47" y2="36" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="42" x2="40" y2="42" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="52" cy="50" r="11" fill="#2ECC71"/>
+          <path d="M47.5 50l3 3 5.5-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="menu-text">
+        <h3>Trabalhos Aceitos</h3>
+        <p>Autores que aceitaram sua abordagem e aguardam feedback.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+
+    <!-- Historico -->
+    <div class="menu-card">
+      <div class="menu-icon ic-gray">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none">
+          <path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#9CA3AF" stroke-width="5.5" fill="none"/>
+          <rect x="26" y="20" width="22" height="30" rx="4" fill="#1C1C1E"/>
+          <line x1="31" y1="28" x2="43" y2="28" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="34" x2="43" y2="34" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="40" x2="38" y2="40" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="52" cy="50" r="11" fill="#2ECC71" stroke="#F4F5F7" stroke-width="2"/>
+          <circle cx="52" cy="50" r="6.5" stroke="#fff" stroke-width="2" fill="none"/>
+          <line x1="52" y1="46" x2="52" y2="50.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <line x1="52" y1="50.5" x2="55" y2="50.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="menu-text">
+        <h3>Historico de Entregas</h3>
+        <p>Acompanhe feedbacks entregues e seus ganhos acumulados.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+  </div>
+
+  <!-- Card leitura 100% CONCLUIDO — clicavel -->
+  <div class="reading-card" onclick="go('s8')">
+    <div class="reading-top">
+      <div>
+        <div class="reading-label">Leitura concluida</div>
+        <div class="reading-title">The Last Orchard</div>
+        <div class="reading-author">Emily Carter &bull; Romance</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+        <span style="font-weight:700; color:var(--gd); font-size:14px;">US$ 80</span>
+        <div class="reading-badge-done">Concluido</div>
+      </div>
+    </div>
+    <div class="reading-progress">
+      <div class="rp-bar-wrap"><div class="rp-bar-fill-done"></div></div>
+      <div class="rp-meta">
+        <span class="rp-pct">100% concluido</span>
+        <span class="rp-step">Relatorio gerado</span>
+      </div>
+    </div>
+    <div class="reading-footer">
+      <div class="rf-time">Entregue em: <span>19 Mai 2026</span></div>
+      <div class="rf-tap">
+        Ver relatorio
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Auto Reader &bull; v1.0</div>
+</div>
+
+
+<!-- ===== S8: RELATORIO CONCLUIDO ===== -->
+<div class="screen" id="s8">
+  <div class="s8-header">
+    <button class="back" onclick="go('s1')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+
+  <div class="section-title">
+    <h2>Relatorios Gerados</h2>
+    <p>Feedbacks completos prontos para entrega</p>
+  </div>
+
+  <!-- PDF principal — mais recente -->
+  <div class="pdf-main-card" onclick="go('s9')">
+    <div class="pdf-main-top">
+      <div class="pdf-icon-wrap">
+        <!-- PDF icon SVG -->
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="2" width="13" height="17" rx="2" fill="#E53E3E" opacity=".15"/>
+          <rect x="3" y="2" width="13" height="17" rx="2" stroke="#E53E3E" stroke-width="1.5" fill="none"/>
+          <path d="M11 2v5h5" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="7" y1="10" x2="13" y2="10" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="7" y1="13" x2="11" y2="13" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/>
+          <text x="5" y="23" font-family="Inter,Arial,sans-serif" font-size="5" font-weight="800" fill="#E53E3E">PDF</text>
+        </svg>
+      </div>
+      <div class="pdf-info">
+        <div class="pdf-new-badge">NOVO</div>
+        <div class="pdf-filename">BetaReader_Report_TheLastOrchard<br>_E.Carter_19May2026.pdf</div>
+        <div class="pdf-meta">The Last Orchard &bull; Emily Carter &bull; Romance</div>
+      </div>
+      <div style="font-weight: 700; color: var(--gd); font-size: 14px; flex-shrink: 0; padding-top: 4px;">US$ 80</div>
+    </div>
+    <div class="pdf-main-footer">
+      <div>
+        <div class="pdf-size">Gerado em: 19/05/2026 &bull; 284 KB</div>
+      </div>
+      <button class="pdf-dl-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Ver relatorio
+      </button>
+    </div>
+  </div>
+
+  <!-- Divisor historico -->
+  <div class="divider-label">Historico de entregas</div>
+
+  <!-- Lista historico -->
+  <div class="history-list">
+
+    <!-- 1 -->
+    <div class="hist-card">
+      <div class="hist-inner">
+        <div class="hist-pdf-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="2" width="13" height="17" rx="2" stroke="#E53E3E" stroke-width="1.5" fill="none"/><path d="M11 2v5h5" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="10" x2="13" y2="10" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="13" x2="11" y2="13" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="hist-info">
+          <div class="hist-book">BetaReader_KingdomOfAshes_J.Miller</div>
+          <div class="hist-author">James Miller &bull; Fantasia</div>
+          <div class="hist-date">12/05/2026 &bull; 311 KB</div>
+        </div>
+        <div class="hist-right">
+          <div class="hist-value">US$ 120</div>
+          <button class="hist-dl">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#27AE60" stroke-width="2.3" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="hist-card">
+      <div class="hist-inner">
+        <div class="hist-pdf-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="2" width="13" height="17" rx="2" stroke="#E53E3E" stroke-width="1.5" fill="none"/><path d="M11 2v5h5" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="10" x2="13" y2="10" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="13" x2="11" y2="13" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="hist-info">
+          <div class="hist-book">BetaReader_LettersToNobody_S.Johnson</div>
+          <div class="hist-author">Sarah Johnson &bull; Romance</div>
+          <div class="hist-date">05/05/2026 &bull; 198 KB</div>
+        </div>
+        <div class="hist-right">
+          <div class="hist-value">US$ 65</div>
+          <button class="hist-dl">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#27AE60" stroke-width="2.3" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="hist-card">
+      <div class="hist-inner">
+        <div class="hist-pdf-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="2" width="13" height="17" rx="2" stroke="#E53E3E" stroke-width="1.5" fill="none"/><path d="M11 2v5h5" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="10" x2="13" y2="10" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="13" x2="11" y2="13" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="hist-info">
+          <div class="hist-book">BetaReader_SilenceBetweenTides_M.Holloway</div>
+          <div class="hist-author">Margaret Holloway &bull; Misterio</div>
+          <div class="hist-date">27/04/2026 &bull; 342 KB</div>
+        </div>
+        <div class="hist-right">
+          <div class="hist-value">US$ 95</div>
+          <button class="hist-dl">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#27AE60" stroke-width="2.3" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="hist-card">
+      <div class="hist-inner">
+        <div class="hist-pdf-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="2" width="13" height="17" rx="2" stroke="#E53E3E" stroke-width="1.5" fill="none"/><path d="M11 2v5h5" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="10" x2="13" y2="10" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="13" x2="11" y2="13" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="hist-info">
+          <div class="hist-book">BetaReader_FracturedGround_D.Hargrove</div>
+          <div class="hist-author">Daniel Hargrove &bull; Thriller</div>
+          <div class="hist-date">18/04/2026 &bull; 378 KB</div>
+        </div>
+        <div class="hist-right">
+          <div class="hist-value">US$ 110</div>
+          <button class="hist-dl">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#27AE60" stroke-width="2.3" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="hist-card">
+      <div class="hist-inner">
+        <div class="hist-pdf-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="2" width="13" height="17" rx="2" stroke="#E53E3E" stroke-width="1.5" fill="none"/><path d="M11 2v5h5" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="10" x2="13" y2="10" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="13" x2="11" y2="13" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="hist-info">
+          <div class="hist-book">BetaReader_TheQuietStorm_R.Nakamura</div>
+          <div class="hist-author">Rika Nakamura &bull; Young Adult</div>
+          <div class="hist-date">09/04/2026 &bull; 229 KB</div>
+        </div>
+        <div class="hist-right">
+          <div class="hist-value">US$ 75</div>
+          <button class="hist-dl">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#27AE60" stroke-width="2.3" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="hist-card">
+      <div class="hist-inner">
+        <div class="hist-pdf-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="2" width="13" height="17" rx="2" stroke="#E53E3E" stroke-width="1.5" fill="none"/><path d="M11 2v5h5" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="10" x2="13" y2="10" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="13" x2="11" y2="13" stroke="#E53E3E" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="hist-info">
+          <div class="hist-book">BetaReader_WinterInParadise_C.Dubois</div>
+          <div class="hist-author">Claire Dubois &bull; Romance</div>
+          <div class="hist-date">01/04/2026 &bull; 261 KB</div>
+        </div>
+        <div class="hist-right">
+          <div class="hist-value">US$ 80</div>
+          <button class="hist-dl">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#27AE60" stroke-width="2.3" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== S9: ENVIAR RELATÓRIO ===== -->
+<div class="screen" id="s9">
+  <div class="s8-header">
+    <button class="back" onclick="go('s8')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+
+  <div class="section-title">
+    <h2>Enviar Relatorio</h2>
+    <p>Revise a mensagem e entregue o feedback</p>
+  </div>
+
+  <!-- Miniatura do PDF (apenas visualizacao compacta) -->
+  <div class="pdf-main-card" style="margin: 10px 16px; box-shadow: 0 1px 6px rgba(0,0,0,.06); border: 1px solid var(--border); cursor: default;">
+    <div class="pdf-main-top" style="padding: 12px;">
+      <div class="pdf-icon-wrap" style="width: 44px; height: 44px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="2" width="13" height="17" rx="2" stroke="#E53E3E" stroke-width="1.5" fill="none"/><path d="M11 2v5h5" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="10" x2="13" y2="10" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="13" x2="11" y2="13" stroke="#E53E3E" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="pdf-info">
+        <div class="pdf-filename" style="font-size: 12px;">BetaReader_Report_TheLastOrchard_E.Carter.pdf</div>
+        <div class="pdf-meta" style="margin-top: 2px;">The Last Orchard &bull; Emily Carter</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Campo de Mensagem -->
+  <div class="msg-box-wrap">
+    <div class="msg-label">Mensagem para Emily</div>
+    <textarea class="msg-textarea" readonly>Hi Emily,
+
+I hope you’re doing well.
+
+I’m happy to let you know that I’ve completed your beta reading report for your manuscript. I really enjoyed reading your work, and I appreciate the opportunity to be part of this stage of your writing process.
+
+The report is attached to this message, and inside you’ll find my detailed feedback on the main points of the story, including the overall reading experience, plot flow, pacing, characters, clarity, emotional impact, and any areas that may benefit from improvement or further development.
+
+I tried to make the feedback as clear, constructive, and useful as possible, so you can use it as a guide while reviewing and polishing your manuscript.
+
+Thank you again for trusting me with your work. If you have any questions about the report or would like me to clarify any specific point, feel free to send me a message.
+
+Best regards,
+Julia Trindade</textarea>
+  </div>
+
+  <div style="padding: 0 16px 20px;">
+    <button class="send-btn" onclick="sendReport()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Enviar Relatorio
+    </button>
+  </div>
+</div>
+
+<!-- ===== S10: COMPROVANTE ===== -->
+<div class="screen" id="s10" style="justify-content: center; align-items: center; padding: 20px; text-align: center;">
+  <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--gl); display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <h2 style="font-size: 22px; font-weight: 800; color: var(--dark); margin-bottom: 12px;">Relatorio Enviado!</h2>
+  <p style="font-size: 15px; color: var(--gray); line-height: 1.5; margin-bottom: 32px;">Voce finalizou a analise.<br>Sua comissao de <strong style="color: var(--gd);">US$ 80</strong> fica disponivel em ate 3 dias com a aprovacao do contratante.</p>
+  
+  <button class="send-btn" onclick="go('s1')" style="width: 100%;">
+    Voltar ao Inicio
+  </button>
+</div>
+
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  el.scrollTop=0;
+}
+
+function sendReport(){
+  const btn = document.querySelector('.send-btn');
+  btn.innerHTML = 'Enviando...';
+  btn.style.opacity = '0.8';
+  
+  setTimeout(() => {
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Relatorio Enviado!';
+    btn.style.background = 'var(--gd)';
+    btn.style.opacity = '1';
+    
+    // Retorna para tela de comprovante após 1.5s
+    setTimeout(() => {
+      go('s10');
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Relatorio';
+      btn.style.background = 'var(--g)';
+    }, 1500);
+  }, 1000);
+}
+</script>
+</body>
+</html>

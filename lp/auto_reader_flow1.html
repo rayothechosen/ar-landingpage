@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Auto Reader</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--g:#2ECC71;--gd:#27AE60;--gl:#E8F8F0;--dark:#1C1C1E;--gray:#6B7280;--border:#E5E7EB;--bg:#F4F5F7;--white:#fff}
+body{font-family:'Inter',sans-serif;background:#dde0e7;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:390px;height:844px;background:var(--bg);border-radius:40px;overflow:hidden;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.28)}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none;flex-direction:column;background:var(--bg);animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+/* Header */
+.header{padding:52px 20px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.header.center{justify-content:center}
+.back{width:36px;height:36px;border-radius:50%;background:var(--white);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.08);color:var(--dark)}
+.logo{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.logo .g{color:var(--g)}
+.logo .d{color:var(--dark)}
+
+/* Welcome banner */
+.welcome{margin:0 16px 16px;background:#E8EAED;border-radius:18px;padding:16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 6px rgba(0,0,0,.06);transition:all .22s ease;cursor:default}
+.welcome:hover{box-shadow:0 8px 24px rgba(0,0,0,.13);transform:scale(1.02)}
+.welcome-icon{width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.welcome-text h2{font-size:15px;font-weight:700;color:var(--dark)}
+.welcome-text p{font-size:12px;color:var(--gray);margin-top:2px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--g);display:inline-block;margin-right:5px}
+
+/* Menu */
+.menu-list{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.menu-card{display:flex;align-items:center;gap:14px;padding:15px 16px;border-radius:18px;cursor:pointer;transition:all .22s ease;background:var(--white);box-shadow:0 1px 5px rgba(0,0,0,.06)}
+.menu-card:hover{box-shadow:0 8px 24px rgba(46,204,113,.18);transform:scale(1.02)}
+.menu-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ic-green{background:var(--gl)}
+.ic-gray{background:#F3F4F6}
+.menu-text{flex:1}
+.menu-text h3{font-size:15px;font-weight:600;color:var(--dark)}
+.menu-text p{font-size:12px;color:var(--gray);margin-top:2px;line-height:1.4}
+.arrow{color:var(--g);font-size:20px;font-weight:700;line-height:1}
+
+/* Section labels */
+.slabel{padding:0 20px 10px;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.6px}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.g{background:var(--g)}
+
+/* Account card */
+.acc-list{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.acc-card-active{display:flex;align-items:center;gap:12px;padding:16px;border:2px solid var(--g);border-radius:18px;background:var(--white);cursor:pointer;transition:all .22s ease;box-shadow:0 2px 12px rgba(46,204,113,.12)}
+.acc-card-active:hover{box-shadow:0 8px 28px rgba(46,204,113,.25);transform:scale(1.02)}
+.acc-icon-wrap{width:48px;height:48px;border-radius:13px;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.acc-info{flex:1}
+.acc-name{font-size:14px;font-weight:700;color:var(--dark)}
+.acc-sub{font-size:12px;color:var(--gray);margin-top:2px}
+.tap-hint{font-size:11px;color:var(--gd);margin-top:5px;font-weight:600}
+.badge-active{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700;background:var(--g);color:#fff;white-space:nowrap}
+
+/* Screen title block */
+.stitle-block{padding:4px 20px 0}
+.stitle{font-size:18px;font-weight:700;color:var(--dark)}
+.ssub{font-size:13px;color:var(--gray);margin-top:4px;line-height:1.5;padding:0 20px 16px}
+
+/* Options */
+.options{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.option{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border:1.5px solid transparent;border-radius:14px;cursor:pointer;transition:all .22s ease;background:var(--white);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.option:hover{box-shadow:0 6px 20px rgba(0,0,0,.10);transform:scale(1.02)}
+.option.sel{border-color:var(--g);background:var(--gl)}
+.opt-left{display:flex;align-items:center;gap:8px}
+.opt-label{font-size:14px;font-weight:500;color:var(--dark)}
+.hot{background:var(--g);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px}
+.radio{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.radio.chk{border-color:var(--g);background:var(--g)}
+.radio.chk::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+
+/* Buttons */
+.btn{width:calc(100% - 32px);margin:16px;padding:16px;background:var(--g);color:#fff;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0}
+.btn:hover{background:var(--gd)}
+
+/* Loading */
+.loading-box{padding:36px 24px;display:flex;flex-direction:column;align-items:center;gap:22px}
+.spinner{width:60px;height:60px;border:4px solid var(--gl);border-top-color:var(--g);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-title{font-size:18px;font-weight:700;color:var(--dark);text-align:center}
+.checklist{width:100%;display:flex;flex-direction:column;gap:14px;padding:0 8px}
+.chk{display:flex;align-items:center;gap:10px;font-size:14px;color:#9CA3AF}
+.chk.done{color:var(--dark);font-weight:500}
+.chk-ic{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;background:#F3F4F6;color:#9CA3AF;font-weight:600;transition:all .3s}
+.chk-ic.ok{background:var(--g);color:#fff}
+
+/* Authors */
+.found-hdr{padding:12px 20px 8px;background:var(--bg)}
+.found-hdr h2{font-size:18px;font-weight:700;color:var(--dark)}
+.found-hdr p{font-size:13px;color:var(--gray);margin-top:2px}
+.authors{padding:8px 16px 16px;display:flex;flex-direction:column;gap:14px}
+
+.au-card{border-radius:18px;overflow:hidden;background:var(--white);box-shadow:0 1px 8px rgba(0,0,0,.07);transition:all .22s ease}
+.au-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.13);transform:scale(1.02)}
+.au-head{padding:14px 14px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.au-head-left{flex:1}
+.au-name-row{display:flex;align-items:center;gap:6px}
+.au-name{font-size:15px;font-weight:700;color:var(--dark)}
+/* Verified badge */
+.verified{width:16px;height:16px;flex-shrink:0}
+.au-region{font-size:12px;color:var(--gray);margin-top:2px}
+.au-book{font-size:13px;color:var(--dark);margin-top:6px;font-weight:600}
+
+/* Fiverr logo SVG badge */
+.fiverr-badge{flex-shrink:0;display:flex;align-items:center;background:#f7f7f7;border-radius:8px;padding:4px 8px}
+
+/* Author avatar photo */
+.au-avatar-photo{width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:top;flex-shrink:0;border:2px solid var(--border);margin-right:2px}
+.au-head-with-avatar{display:flex;align-items:flex-start;gap:10px;padding:14px 14px 10px;justify-content:space-between}
+
+.au-tags{padding:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.tg{background:#F3F4F6;color:var(--dark)}
+.tw{background:#EFF6FF;color:#2563EB}
+.tp{background:var(--gl);color:var(--gd)}
+
+.au-msg{padding:10px 14px;background:#FAFAFA;border-top:1px solid var(--border)}
+.au-msg-label{font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.au-msg p{font-size:12px;color:#374151;line-height:1.65}
+
+/* Translate toggle */
+.translate-btn{display:flex;align-items:center;gap:5px;margin:8px 14px 0;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--white);color:var(--gray);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;width:fit-content}
+.translate-btn:hover{border-color:var(--g);color:var(--g)}
+.translate-btn svg{transition:transform .2s}
+
+.au-btn{width:calc(100% - 28px);margin:10px 14px 14px;padding:12px;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s}
+.au-btn:hover{background:var(--gd)}
+
+/* Reset */
+.reset-bar{padding:4px 16px 20px;display:flex;justify-content:center}
+.reset-btn{display:flex;align-items:center;gap:6px;padding:10px 22px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);color:var(--gray);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.reset-btn:hover{border-color:var(--g);color:var(--g)}
+
+/* Add account card */
+.acc-add-card{display:flex;align-items:center;gap:12px;padding:15px 16px;border:2px dashed var(--border);border-radius:18px;background:var(--white);cursor:pointer;transition:all .22s ease;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.acc-add-card:hover{border-color:var(--g);box-shadow:0 8px 24px rgba(46,204,113,.15);transform:scale(1.02)}
+.acc-add-icon{width:46px;height:46px;border-radius:13px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .22s}
+.acc-add-card:hover .acc-add-icon{background:var(--gl)}
+.acc-add-text h4{font-size:14px;font-weight:600;color:var(--gray);transition:color .22s}
+.acc-add-card:hover .acc-add-text h4{color:var(--gd)}
+.acc-add-text p{font-size:12px;color:#9CA3AF;margin-top:2px}
+
+.hint{font-size:12px;color:var(--gray);text-align:center;padding:0 20px 0;line-height:1.5}
+.footer{padding:14px;text-align:center;font-size:11px;color:#C1C5CD;flex-shrink:0;margin-top:auto}
+
+/* Proposals preview card */
+.proposals-card{margin:12px 16px 0;background:var(--white);border-radius:20px;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.07);display:none;transition:all .22s ease;cursor:default}
+.proposals-card.visible{display:block}
+.proposals-card.visible:hover{box-shadow:0 8px 28px rgba(0,0,0,.13);transform:scale(1.02)}
+.prop-top{padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between}
+.prop-left{}
+.prop-label{font-size:10px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.prop-count{font-size:26px;font-weight:800;color:var(--dark);line-height:1}
+.prop-sub{font-size:12px;color:var(--gray);margin-top:3px}
+.prop-icon{width:48px;height:48px;border-radius:14px;background:var(--gl);display:flex;align-items:center;justify-content:center}
+.prop-footer{padding:10px 16px 13px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;background:#FAFAFA}
+.prop-dot{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0}
+.prop-note{font-size:12px;color:var(--gray);line-height:1.4}
+
+/* Reading progress card */
+.reading-card{margin:10px 16px 4px;background:var(--white);border-radius:20px;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.07);transition:all .22s ease;cursor:default}
+.reading-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.13);transform:scale(1.02)}
+.reading-top{padding:14px 16px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;background:#E8EAED}
+.reading-label{font-size:10px;font-weight:700;color:var(--gd);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.reading-title{font-size:15px;font-weight:700;color:var(--dark)}
+.reading-author{font-size:12px;color:var(--gray);margin-top:2px}
+.reading-badge{padding:5px 10px;border-radius:20px;background:#FFF3CD;color:#B45309;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.reading-progress{padding:12px 16px 14px;background:var(--white)}
+.rp-bar-wrap{background:#F3F4F6;border-radius:8px;height:8px;overflow:hidden;margin-bottom:8px}
+.rp-bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--g),#1aaf5d);width:67%;animation:grow .8s ease forwards}
+@keyframes grow{from{width:0}to{width:67%}}
+.rp-meta{display:flex;justify-content:space-between;align-items:center}
+.rp-pct{font-size:13px;font-weight:700;color:var(--dark)}
+.rp-step{font-size:12px;color:var(--gray)}
+.reading-footer{padding:10px 16px 13px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#E8EAED}
+.rf-time{font-size:12px;color:var(--gray)}
+.rf-time span{font-weight:600;color:var(--dark)}
+.rf-pay{font-size:13px;font-weight:700;color:var(--gd)}
+
+/* Draft Screen styling */
+.draft-card {
+  margin: 10px 16px 14px;
+  background: var(--white);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0,0,0,.07);
+  padding: 16px;
+}
+.draft-editor-wrap {
+  margin: 0 16px 16px;
+  background: var(--white);
+  border-radius: 20px;
+  box-shadow: 0 1px 8px rgba(0,0,0,.07);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.draft-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.draft-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+.draft-status {
+  font-size: 11px;
+  color: var(--g);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.draft-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--g);
+  display: inline-block;
+}
+.draft-textarea {
+  width: 100%;
+  height: 240px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--dark);
+  resize: none;
+  line-height: 1.6;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #FAFAFA;
+}
+.draft-textarea:focus {
+  border-color: var(--g);
+  background: var(--white);
+}
+
+/* Success Modal Glassmorphic Overlay */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 28, 30, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.3s ease forwards;
+}
+.success-box {
+  background: var(--white);
+  width: 80%;
+  border-radius: 28px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  text-align: center;
+  transform: scale(0.9);
+  animation: modalScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.success-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--gl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--g);
+  font-size: 36px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(46,204,113,0.15);
+  animation: checkPop 0.5s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.success-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark);
+}
+.success-text {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.5;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalScaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes checkPop {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+</style>
+</head>
+<body>
+<div class="phone">
+
+<!-- ===== S1: DASHBOARD ===== -->
+<div class="screen active" id="s1">
+  <div class="header center">
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+
+  <!-- Welcome banner -->
+  <div class="welcome">
+    <div class="welcome-icon" style="width:48px;height:48px;border-radius:50%;overflow:hidden;padding:0;flex-shrink:0">
+      <img src="imgs/julia_trindade.png" alt="Julia Trindade" style="width:100%;height:100%;object-fit:cover;object-position:top">
+    </div>
+    <div class="welcome-text">
+      <h2>Bem-vinda de volta, Julia Trindade</h2>
+      <p><span class="status-dot"></span>Sua automacao esta ativa e monitorando</p>
+    </div>
+  </div>
+
+  <div class="menu-list">
+    <!-- Encontrar Autores -->
+    <div class="menu-card" onclick="go('s2')">
+      <div class="menu-icon ic-green">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#2ECC71" stroke-width="5.5" fill="none"/>
+          <circle cx="35" cy="34" r="8" fill="#1C1C1E"/>
+          <path d="M20 52c0-8.3 6.7-15 15-15 3.2 0 6.2 1 8.6 2.7" stroke="#1C1C1E" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <circle cx="56" cy="48" r="7.5" stroke="#1C1C1E" stroke-width="4" fill="none"/>
+          <line x1="61.5" y1="53.5" x2="66" y2="58" stroke="#1C1C1E" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="menu-text">
+        <h3>Encontrar Autores</h3>
+        <p>O sistema busca autores que precisam de beta reader e cria abordagens em ingles automaticamente.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+
+    <!-- Feedback Automatico -->
+    <div class="menu-card">
+      <div class="menu-icon ic-green">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#2ECC71" stroke-width="5.5" fill="none"/>
+          <rect x="24" y="26" width="22" height="18" rx="3" fill="#1C1C1E"/>
+          <line x1="28" y1="31" x2="42" y2="31" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="28" y1="36" x2="42" y2="36" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="28" y1="41" x2="36" y2="41" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="52" cy="42" r="9" fill="#2ECC71"/>
+          <path d="M48.5 42l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M40 20 Q40 13 48 13" stroke="#2ECC71" stroke-width="3" stroke-linecap="round" fill="none" stroke-dasharray="2 2"/>
+          <path d="M52 28 Q58 24 58 18" stroke="#2ECC71" stroke-width="3" stroke-linecap="round" fill="none" stroke-dasharray="2 2"/>
+        </svg>
+      </div>
+      <div class="menu-text">
+        <h3>Feedback Automatico</h3>
+        <p>Aceite um trabalho e a IA analisa o livro e prepara o feedback pronto em ate 24h.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+
+    <!-- Trabalhos Aceitos -->
+    <div class="menu-card">
+      <div class="menu-icon ic-gray">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#9CA3AF" stroke-width="5.5" fill="none"/>
+          <rect x="26" y="22" width="26" height="32" rx="4" fill="#1C1C1E"/>
+          <line x1="31" y1="30" x2="47" y2="30" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="36" x2="47" y2="36" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="42" x2="40" y2="42" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="52" cy="50" r="11" fill="#2ECC71"/>
+          <path d="M47.5 50l3 3 5.5-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="menu-text">
+        <h3>Trabalhos Aceitos</h3>
+        <p>Veja os autores que aceitaram sua abordagem e estao aguardando feedback.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+
+    <!-- Historico -->
+    <div class="menu-card">
+      <div class="menu-icon ic-gray">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#9CA3AF" stroke-width="5.5" fill="none"/>
+          <rect x="26" y="20" width="22" height="30" rx="4" fill="#1C1C1E"/>
+          <line x1="31" y1="28" x2="43" y2="28" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="34" x2="43" y2="34" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="40" x2="38" y2="40" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="52" cy="50" r="11" fill="#2ECC71" stroke="#F4F5F7" stroke-width="2"/>
+          <circle cx="52" cy="50" r="6.5" stroke="#fff" stroke-width="2" fill="none"/>
+          <line x1="52" y1="46" x2="52" y2="50.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <line x1="52" y1="50.5" x2="55" y2="50.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="menu-text">
+        <h3>Historico de Entregas</h3>
+        <p>Acompanhe feedbacks entregues e seus ganhos acumulados.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+  </div>
+
+  <!-- Progresso de leitura do ultimo livro -->
+  <div class="reading-card">
+    <div class="reading-top">
+      <div>
+        <div class="reading-label">Leitura em andamento</div>
+        <div class="reading-title">The Last Orchard</div>
+        <div class="reading-author">Emily Carter • Romance</div>
+      </div>
+      <div class="reading-badge">Em analise</div>
+    </div>
+    <div class="reading-progress">
+      <div class="rp-bar-wrap"><div class="rp-bar-fill"></div></div>
+      <div class="rp-meta">
+        <span class="rp-pct">67% concluido</span>
+        <span class="rp-step">Analisando personagens...</span>
+      </div>
+    </div>
+    <div class="reading-footer">
+      <div class="rf-time">Entrega prevista: <span>hoje as 19h</span></div>
+      <div class="rf-pay">~US$ 80</div>
+    </div>
+  </div>
+
+  <div class="footer">Auto Reader • v1.0</div>
+</div>
+
+<!-- ===== S2: CONTA ===== -->
+<div class="screen" id="s2">
+  <div class="header">
+    <button class="back" onclick="go('s1')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+  <div class="stitle-block"><div class="stitle">Encontrar Autores</div></div>
+  <div class="ssub">Selecione a conta para iniciar a busca automatica.</div>
+  <div class="slabel"><div class="dot g"></div>Conta vinculada</div>
+  <div class="acc-list">
+    <div class="acc-card-active" onclick="go('s4')">
+      <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--g)">
+        <img src="imgs/julia_trindade.png" alt="Julia Trindade" style="width:100%;height:100%;object-fit:cover;object-position:top">
+      </div>
+      <div class="acc-info">
+        <div class="acc-name">Julia Trindade</div>
+        <div class="acc-sub">Beta Reader Profissional</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:2px;display:flex;align-items:center;gap:4px">
+          <svg width="34" height="12" viewBox="0 0 46 16" fill="none"><text y="12" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="800" fill="#1DBF73">fiverr</text><circle cx="43.5" cy="3" r="2.2" fill="#1DBF73"/></svg>
+        </div>
+        <div class="tap-hint">Toque para iniciar a busca</div>
+      </div>
+      <div class="badge-active">Ativa</div>
+    </div>
+  </div>
+
+  <!-- Adicionar nova conta -->
+  <div class="acc-list" style="margin-top:10px">
+    <div class="acc-add-card">
+      <div class="acc-add-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+      </div>
+      <div class="acc-add-text">
+        <h4>Adicionar nova conta</h4>
+        <p>Conecte outra conta do Fiverr</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer" style="margin-top:auto">Auto Reader • v1.0</div>
+</div>
+
+<!-- ===== S4: GENERO ===== -->
+<div class="screen" id="s4">
+  <div class="header">
+    <button class="back" onclick="go('s2')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+  <div class="stitle-block"><div class="stitle">Que tipo de livro voce quer atender?</div></div>
+  <div class="ssub">O sistema buscara autores com base no genero escolhido.</div>
+  <div class="options" id="grp-genre">
+    <div class="option sel" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Romance</span><span class="hot">Mais buscado</span></div>
+      <div class="radio chk"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Fantasia</span></div><div class="radio"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Suspense / Thriller</span></div><div class="radio"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Ficcao Cientifica</span></div><div class="radio"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Misterio</span></div><div class="radio"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Terror / Horror</span></div><div class="radio"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Drama Historico</span></div><div class="radio"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Young Adult (YA)</span></div><div class="radio"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Autoajuda</span></div><div class="radio"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-genre')">
+      <div class="opt-left"><span class="opt-label">Qualquer genero</span></div><div class="radio"></div>
+    </div>
+  </div>
+  <button class="btn" onclick="go('s5')">Continuar</button>
+</div>
+
+<!-- ===== S5: VALOR ===== -->
+<div class="screen" id="s5">
+  <div class="header">
+    <button class="back" onclick="go('s4')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+  <div class="stitle-block"><div class="stitle">Qual faixa de pagamento voce prefere?</div></div>
+  <div class="ssub">O sistema filtrara autores dentro do valor que voce escolher.</div>
+  <div class="options" id="grp-val">
+    <div class="option" onclick="pick(this,'grp-val');updateProposals(42,'US$ 30 a US$ 60')">
+      <div class="opt-left"><span class="opt-label">US$ 30 – US$ 60</span></div><div class="radio"></div>
+    </div>
+    <div class="option sel" onclick="pick(this,'grp-val');updateProposals(30,'US$ 60 a US$ 100')">
+      <div class="opt-left"><span class="opt-label">US$ 60 – US$ 100</span><span class="hot">Mais comum</span></div>
+      <div class="radio chk"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-val');updateProposals(18,'US$ 100 ou mais')">
+      <div class="opt-left"><span class="opt-label">US$ 100+</span></div><div class="radio"></div>
+    </div>
+    <div class="option" onclick="pick(this,'grp-val');updateProposals(67,'qualquer valor')">
+      <div class="opt-left"><span class="opt-label">Qualquer valor</span></div><div class="radio"></div>
+    </div>
+  </div>
+
+  <!-- Card de propostas geradas -->
+  <div class="proposals-card visible" id="proposals-card">
+    <div class="prop-top">
+      <div class="prop-left">
+        <div class="prop-label">Propostas geradas</div>
+        <div class="prop-count" id="prop-number">30</div>
+        <div class="prop-sub" id="prop-sub">possiveis contratos na faixa de US$ 60 a US$ 100</div>
+      </div>
+      <div class="prop-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+    </div>
+    <div class="prop-footer">
+      <div class="prop-dot"></div>
+      <div class="prop-note">Autores ativos no Fiverr buscando beta reader agora. Clique em ver propostas para iniciar.</div>
+    </div>
+  </div>
+
+  <button class="btn" style="margin-top:12px" onclick="startSearch()">Ver propostas</button>
+</div>
+
+<!-- ===== S6: BUSCANDO ===== -->
+<div class="screen" id="s6">
+  <div class="header center"><div class="logo"><span class="g">auto</span><span class="d">reader.</span></div></div>
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-title">Buscando autores para voce...</div>
+    <div class="checklist">
+      <div class="chk" id="c1"><div class="chk-ic" id="i1">1</div>Conectando ao Fiverr</div>
+      <div class="chk" id="c2"><div class="chk-ic" id="i2">2</div>Analisando oportunidades abertas</div>
+      <div class="chk" id="c3"><div class="chk-ic" id="i3">3</div>Filtrando autores compativeis</div>
+      <div class="chk" id="c4"><div class="chk-ic" id="i4">4</div>Criando abordagens em ingles</div>
+    </div>
+  </div>
+  <div class="footer">Auto Reader • v1.0</div>
+</div>
+
+<!-- ===== S7: AUTORES ENCONTRADOS ===== -->
+<div class="screen" id="s7">
+  <div class="header">
+    <button class="back" onclick="go('s2')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+  <div class="found-hdr">
+    <h2>Autores encontrados hoje</h2>
+    <p id="found-count">30 autores compativeis com seu perfil</p>
+  </div>
+  <div class="authors">
+
+    <!-- Author 1: Emily Carter -->
+    <div class="au-card">
+      <div class="au-head-with-avatar">
+        <div style="display:flex;align-items:flex-start;gap:10px;flex:1">
+          <img class="au-avatar-photo" src="imgs/author_emily.jpg" alt="Emily Carter">
+          <div class="au-head-left">
+            <div class="au-name-row">
+              <span class="au-name">Emily Carter</span>
+              <svg class="verified" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#2ECC71"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="au-region">Estados Unidos</div>
+            <div class="au-book">The Last Orchard</div>
+          </div>
+        </div>
+        <div class="fiverr-badge">
+          <svg width="46" height="16" viewBox="0 0 46 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text y="13" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="800" fill="#1DBF73">fiverr</text>
+            <circle cx="43.5" cy="3.5" r="2.5" fill="#1DBF73"/>
+          </svg>
+        </div>
+      </div>
+      <div class="au-tags">
+        <span class="tag tg">Romance</span>
+        <span class="tag tw">~72.000 palavras</span>
+        <span class="tag tp">~US$ 80</span>
+      </div>
+      <div class="au-msg">
+        <div class="au-msg-label">Solicitacao do autor</div>
+        <p id="txt1-en">Hi! I'm looking for an experienced beta reader for my contemporary romance novel, <em>The Last Orchard</em> (~72,000 words). The story follows a woman returning to her hometown after a painful divorce, reconnecting with her past and finding unexpected love. I need honest, detailed feedback on: pacing (especially chapters 8–14), character believability, emotional impact of the ending, and whether the romantic tension builds naturally. Inline comments via Google Docs. Payment via PayPal upon delivery. Turnaround: 7–10 days preferred.</p>
+        <p id="txt1-pt" style="display:none">Ola! Estou procurando um beta reader experiente para meu romance contemporaneo, <em>The Last Orchard</em> (~72.000 palavras). A historia segue uma mulher que retorna a sua cidade natal apos um divorcio doloroso, reconectando-se com seu passado e encontrando um amor inesperado. Preciso de feedback honesto e detalhado sobre: ritmo (especialmente capitulos 8-14), credibilidade dos personagens, impacto emocional do final e se a tensao romantica se desenvolve naturalmente. Comentarios inline via Google Docs. Pagamento via PayPal apos a entrega. Prazo: 7-10 dias.</p>
+      </div>
+      <button class="translate-btn" onclick="toggleTranslate(1,this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg>
+        Traduzir para portugues
+      </button>
+      <button class="au-btn" onclick="go('s8')">Criar abordagem</button>
+    </div>
+
+    <!-- Author 2: James Miller -->
+    <div class="au-card">
+      <div class="au-head-with-avatar">
+        <div style="display:flex;align-items:flex-start;gap:10px;flex:1">
+          <img class="au-avatar-photo" src="imgs/author_james.jpg" alt="James Miller">
+          <div class="au-head-left">
+            <div class="au-name-row">
+              <span class="au-name">James Miller</span>
+              <svg class="verified" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#2ECC71"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="au-region">Reino Unido</div>
+            <div class="au-book">Kingdom of Ashes</div>
+          </div>
+        </div>
+        <div class="fiverr-badge">
+          <svg width="46" height="16" viewBox="0 0 46 16" fill="none"><text y="13" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="800" fill="#1DBF73">fiverr</text><circle cx="43.5" cy="3.5" r="2.5" fill="#1DBF73"/></svg>
+        </div>
+      </div>
+      <div class="au-tags">
+        <span class="tag tg">Fantasia</span>
+        <span class="tag tw">~95.000 palavras</span>
+        <span class="tag tp">~US$ 120</span>
+      </div>
+      <div class="au-msg">
+        <div class="au-msg-label">Solicitacao do autor</div>
+        <p id="txt2-en">Seeking a dedicated beta reader for my epic fantasy novel <em>Kingdom of Ashes</em> (~95,000 words). This is a dark, character-driven story with political intrigue, morally grey protagonists, and a complex magic system. I need feedback focused on: world-building clarity, plot consistency, character motivation and arc satisfaction, and the overall pacing of the final act. Experience with epic fantasy is a strong plus. Google Docs preferred. Budget: $120, negotiable for thorough feedback.</p>
+        <p id="txt2-pt" style="display:none">Procuro um beta reader dedicado para meu romance de fantasia epica <em>Kingdom of Ashes</em> (~95.000 palavras). E uma historia sombria, centrada em personagens com intriga politica, protagonistas moralmente ambiguos e um sistema de magia complexo. Preciso de feedback sobre: clareza da construcao do mundo, consistencia do enredo, motivacao dos personagens e o ritmo geral do ato final. Experiencia com fantasia epica e um diferencial. Google Docs preferido. Orcamento: US$120, negociavel para feedback completo.</p>
+      </div>
+      <button class="translate-btn" onclick="toggleTranslate(2,this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg>
+        Traduzir para portugues
+      </button>
+      <button class="au-btn">Criar abordagem</button>
+    </div>
+
+    <!-- Author 3: Sarah Johnson -->
+    <div class="au-card">
+      <div class="au-head-with-avatar">
+        <div style="display:flex;align-items:flex-start;gap:10px;flex:1">
+          <img class="au-avatar-photo" src="imgs/author_sarah.jpg" alt="Sarah Johnson">
+          <div class="au-head-left">
+            <div class="au-name-row">
+              <span class="au-name">Sarah Johnson</span>
+              <svg class="verified" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#2ECC71"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="au-region">Canada</div>
+            <div class="au-book">Letters to Nobody</div>
+          </div>
+        </div>
+        <div class="fiverr-badge">
+          <svg width="46" height="16" viewBox="0 0 46 16" fill="none"><text y="13" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="800" fill="#1DBF73">fiverr</text><circle cx="43.5" cy="3.5" r="2.5" fill="#1DBF73"/></svg>
+        </div>
+      </div>
+      <div class="au-tags">
+        <span class="tag tg">Romance</span>
+        <span class="tag tw">~58.000 palavras</span>
+        <span class="tag tp">~US$ 65</span>
+      </div>
+      <div class="au-msg">
+        <div class="au-msg-label">Solicitacao do autor</div>
+        <p id="txt3-en">Hello! I'm looking for a beta reader for my literary romance <em>Letters to Nobody</em> (~58,000 words), a story told through unsent letters between two people slowly finding their way back to each other. Key feedback areas: Does the epistolary format feel natural? Is the emotional arc convincing? Are there pacing issues or moments where engagement drops? I'd love someone who reads romance regularly. Inline comments + a short reader report preferred. PayPal, ~$65, flexible timeline.</p>
+        <p id="txt3-pt" style="display:none">Ola! Estou procurando um beta reader para meu romance literario <em>Letters to Nobody</em> (~58.000 palavras), uma historia contada atraves de cartas nao enviadas entre duas pessoas que lentamente encontram o caminho de volta uma para a outra. Areas principais: o formato epistolar parece natural? O arco emocional e convincente? Ha problemas de ritmo? Prefiro alguem que leia romance com frequencia. Comentarios inline + relatorio curto preferidos. PayPal, ~US$65, prazo flexivel.</p>
+      </div>
+      <button class="translate-btn" onclick="toggleTranslate(3,this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg>
+        Traduzir para portugues
+      </button>
+      <button class="au-btn">Criar abordagem</button>
+    </div>
+
+    <!-- Author 4 — Nova feminina: Margaret Holloway -->
+    <div class="au-card">
+      <div class="au-head-with-avatar">
+        <div style="display:flex;align-items:flex-start;gap:10px;flex:1">
+          <img class="au-avatar-photo" src="imgs/author_margaret.jpg" alt="Margaret Holloway">
+          <div class="au-head-left">
+            <div class="au-name-row">
+              <span class="au-name">Margaret Holloway</span>
+              <svg class="verified" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#2ECC71"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="au-region">Australia</div>
+            <div class="au-book">The Silence Between Tides</div>
+          </div>
+        </div>
+        <div class="fiverr-badge">
+          <svg width="46" height="16" viewBox="0 0 46 16" fill="none"><text y="13" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="800" fill="#1DBF73">fiverr</text><circle cx="43.5" cy="3.5" r="2.5" fill="#1DBF73"/></svg>
+        </div>
+      </div>
+      <div class="au-tags">
+        <span class="tag tg">Misterio</span>
+        <span class="tag tw">~84.000 palavras</span>
+        <span class="tag tp">~US$ 95</span>
+      </div>
+      <div class="au-msg">
+        <div class="au-msg-label">Solicitacao do autor</div>
+        <p id="txt4-en">Hi there! I'm searching for a thoughtful beta reader for my psychological mystery, <em>The Silence Between Tides</em> (~84,000 words). The story centers on a retired detective returning to her coastal hometown to solve a decades-old disappearance that may be connected to her own past. I need feedback on: the pacing of the mystery reveals (do the clues feel fair?), the protagonist's voice and emotional depth, whether the setting feels immersive, and if the ending is satisfying or feels rushed. I have experience with two prior published novels and value detailed, constructive feedback. Google Docs preferred. PayPal, ~$95. Turnaround: 10 days.</p>
+        <p id="txt4-pt" style="display:none">Ola! Estou procurando um beta reader atento para meu misterio psicologico, <em>The Silence Between Tides</em> (~84.000 palavras). A historia acompanha uma detetive aposentada que retorna a sua cidade costeira natal para resolver um desaparecimento de decadas que pode estar ligado ao seu proprio passado. Preciso de feedback sobre: o ritmo das revelacoes do misterio, a voz e profundidade emocional da protagonista, se o cenario parece imersivo e se o final e satisfatorio. Tenho experiencia com dois romances publicados anteriormente. Google Docs preferido. PayPal, ~US$95. Prazo: 10 dias.</p>
+      </div>
+      <button class="translate-btn" onclick="toggleTranslate(4,this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg>
+        Traduzir para portugues
+      </button>
+      <button class="au-btn">Criar abordagem</button>
+    </div>
+
+    <!-- Author 5 — Novo masculino: Daniel Hargrove -->
+    <div class="au-card">
+      <div class="au-head-with-avatar">
+        <div style="display:flex;align-items:flex-start;gap:10px;flex:1">
+          <img class="au-avatar-photo" src="imgs/author_daniel.jpg" alt="Daniel Hargrove">
+          <div class="au-head-left">
+            <div class="au-name-row">
+              <span class="au-name">Daniel Hargrove</span>
+              <svg class="verified" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#2ECC71"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="au-region">Estados Unidos</div>
+            <div class="au-book">Fractured Ground</div>
+          </div>
+        </div>
+        <div class="fiverr-badge">
+          <svg width="46" height="16" viewBox="0 0 46 16" fill="none"><text y="13" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="800" fill="#1DBF73">fiverr</text><circle cx="43.5" cy="3.5" r="2.5" fill="#1DBF73"/></svg>
+        </div>
+      </div>
+      <div class="au-tags">
+        <span class="tag tg">Suspense / Thriller</span>
+        <span class="tag tw">~91.000 palavras</span>
+        <span class="tag tp">~US$ 110</span>
+      </div>
+      <div class="au-msg">
+        <div class="au-msg-label">Solicitacao do autor</div>
+        <p id="txt5-en">Hello! Looking for an experienced beta reader for my political thriller, <em>Fractured Ground</em> (~91,000 words). The novel follows a whistleblower journalist who uncovers a conspiracy within the highest levels of government — only to realize her editor might be part of it. I need honest feedback on: plot tension and whether the twists feel earned, the pacing across the three-act structure, character consistency (especially the antagonist's motivations), and overall readability. I write full-time and take beta feedback very seriously. Willing to pay $110 for in-depth, chapter-by-chapter commentary. Google Docs or Word. PayPal.</p>
+        <p id="txt5-pt" style="display:none">Ola! Procuro um beta reader experiente para meu thriller politico, <em>Fractured Ground</em> (~91.000 palavras). O romance acompanha uma jornalista denunciante que descobre uma conspiria nos maiores niveis do governo — apenas para perceber que seu editor pode fazer parte dela. Preciso de feedback honesto sobre: tensao do enredo e se as reviravoltasao merecidas, ritmo ao longo da estrutura de tres atos, consistencia dos personagens e legibilidade geral. Escrevo em tempo integral e levo o feedback a serio. Disposto a pagar US$110 por comentarios detalhados capitulo a capitulo. Google Docs ou Word. PayPal.</p>
+      </div>
+      <button class="translate-btn" onclick="toggleTranslate(5,this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg>
+        Traduzir para portugues
+      </button>
+      <button class="au-btn">Criar abordagem</button>
+    </div>
+
+  </div>
+  <div class="reset-bar">
+    <button class="reset-btn" onclick="resetFlow()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      Reiniciar fluxo
+    </button>
+  </div>
+</div>
+
+<!-- ===== S8: RASCUNHO DA ABORDAGEM ===== -->
+<div class="screen" id="s8">
+  <div class="header">
+    <button class="back" onclick="go('s7')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+  
+  <div class="stitle-block">
+    <div class="stitle">Abordagem Gerada</div>
+  </div>
+  <div class="ssub">Sua abordagem exclusiva para o livro de Emily Carter foi formulada pela IA.</div>
+
+  <!-- Resumo da autora e do livro -->
+  <div class="draft-card">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <img class="au-avatar-photo" src="imgs/author_emily.jpg" alt="Emily Carter" style="margin:0">
+      <div style="flex:1">
+        <div class="au-name-row">
+          <span class="au-name" style="font-size:14px">Emily Carter</span>
+          <svg class="verified" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#2ECC71"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="au-region" style="font-size:11px">Estados Unidos</div>
+        <div class="au-book" style="font-size:12px;margin-top:4px">The Last Orchard</div>
+      </div>
+      <div class="fiverr-badge" style="padding:2px 6px">
+        <svg width="34" height="12" viewBox="0 0 46 16" fill="none"><text y="12" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="800" fill="#1DBF73">fiverr</text><circle cx="43.5" cy="3" r="2.2" fill="#1DBF73"/></svg>
+      </div>
+    </div>
+    
+    <div class="au-tags" style="padding:10px 0 0;margin:0;gap:4px">
+      <span class="tag tg" style="font-size:10px;padding:2px 8px">Romance</span>
+      <span class="tag tw" style="font-size:10px;padding:2px 8px">~72.000 pal.</span>
+      <span class="tag tp" style="font-size:10px;padding:2px 8px">~US$ 80</span>
+    </div>
+  </div>
+
+  <!-- Caixa de edição do rascunho -->
+  <div class="draft-editor-wrap">
+    <div class="draft-label-row">
+      <div class="draft-label">Mensagem da Proposta</div>
+    </div>
+    
+    <textarea class="draft-textarea" id="draft-message-box" spellcheck="false">Hi Emily!
+
+I would love to help you beta read "The Last Orchard"! Your story about a woman reconnecting with her roots and finding unexpected love after a divorce sounds deeply moving and emotionally resonant.
+
+I have extensive experience beta reading contemporary romance, and I would pay special attention to the areas you highlighted:
+1. Pacing in chapters 8–14: I will ensure the narrative flow remains engaging and highlight any moments that feel slow or rushed.
+2. Character believability & romantic tension: I'll analyze if the emotional connection and chemistry build naturally and keep readers hooked.
+3. The ending: I'll provide honest feedback on the emotional impact and resolution of the story.
+
+I'm completely comfortable leaving detailed inline comments via Google Docs and working within your 7-10 days timeline.
+
+Let's collaborate to make your novel shine!
+
+Warm regards,
+Julia</textarea>
+  </div>
+
+  <!-- Botão de Tradução rápida -->
+  <button class="translate-btn" id="btn-translate-draft" onclick="toggleDraftTranslation()" style="margin: 0 16px 12px">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg>
+    Traduzir para português
+  </button>
+
+  <!-- Botão de Ação -->
+  <button class="btn" style="margin-top:0" onclick="enviarAbordagem()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    Enviar Abordagem no Fiverr
+  </button>
+  
+  <div class="footer" style="margin-top:auto">Auto Reader • v1.0</div>
+</div>
+
+<!-- ===== OVERLAY DE SUCESSO ===== -->
+<div class="overlay" id="success-modal">
+  <div class="success-box">
+    <div class="success-circle">✓</div>
+    <div class="success-title">Abordagem Enviada!</div>
+    <div class="success-text">Sua proposta personalizada foi enviada com sucesso no Fiverr para Emily Carter.</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  el.scrollTop=0;
+}
+
+function pick(el,grpId){
+  document.getElementById(grpId).querySelectorAll('.option').forEach(o=>{
+    o.classList.remove('sel');
+    const r=o.querySelector('.radio');
+    r.classList.remove('chk');
+    r.innerHTML='';
+  });
+  el.classList.add('sel');
+  el.querySelector('.radio').classList.add('chk');
+}
+
+let selectedProposals = 30;
+
+function updateProposals(count, range){
+  selectedProposals = count;
+  document.getElementById('prop-number').textContent=count;
+  document.getElementById('prop-sub').textContent='possiveis contratos na faixa de '+range;
+  const card=document.getElementById('proposals-card');
+  card.classList.remove('visible');
+  void card.offsetWidth;
+  card.classList.add('visible');
+}
+
+function startSearch(){
+  go('s6');
+  const steps=[{c:'c1',i:'i1',d:700},{c:'c2',i:'i2',d:1500},{c:'c3',i:'i3',d:2400},{c:'c4',i:'i4',d:3300}];
+  steps.forEach(({c,i})=>{
+    document.getElementById(c).className='chk';
+    const ic=document.getElementById(i);
+    ic.className='chk-ic';
+    ic.textContent=i.replace('i','');
+  });
+  steps.forEach(({c,i,d})=>{
+    setTimeout(()=>{
+      document.getElementById(c).className='chk done';
+      const ic=document.getElementById(i);
+      ic.className='chk-ic ok';
+      ic.textContent='✓';
+    },d);
+  });
+  setTimeout(()=>{
+    document.getElementById('found-count').textContent = selectedProposals + ' autores compativeis com seu perfil';
+    go('s7');
+  },4400);
+}
+
+// translated state tracker
+const translated={1:false,2:false,3:false,4:false,5:false};
+function toggleTranslate(n,btn){
+  const isTranslated=translated[n];
+  document.getElementById('txt'+n+'-en').style.display=isTranslated?'block':'none';
+  document.getElementById('txt'+n+'-pt').style.display=isTranslated?'none':'block';
+  translated[n]=!isTranslated;
+  btn.innerHTML=isTranslated
+    ?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg> Traduzir para portugues'
+    :'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg> Ver em ingles';
+}
+
+const msgDraftEN = `Hi Emily!
+
+I would love to help you beta read "The Last Orchard"! Your story about a woman reconnecting with her roots and finding unexpected love after a divorce sounds deeply moving and emotionally resonant.
+
+I have extensive experience beta reading contemporary romance, and I would pay special attention to the areas you highlighted:
+1. Pacing in chapters 8–14: I will ensure the narrative flow remains engaging and highlight any moments that feel slow or rushed.
+2. Character believability & romantic tension: I'll analyze if the emotional connection and chemistry build naturally and keep readers hooked.
+3. The ending: I'll provide honest feedback on the emotional impact and resolution of the story.
+
+I'm completely comfortable leaving detailed inline comments via Google Docs and working within your 7-10 days timeline.
+
+Let's collaborate to make your novel shine!
+
+Warm regards,
+Julia`;
+
+const msgDraftPT = `Olá Emily!
+
+Eu adoraria ajudar você a fazer a leitura beta de "The Last Orchard"! Sua história sobre uma mulher se reconectando com suas raízes e encontrando um amor inesperado após um divórcio soa profundamente emocionante e ressonante.
+
+Tenho ampla experiência em leitura beta de romance contemporâneo e prestarei atenção especial às áreas que você destacou:
+1. Ritmo nos capítulos 8 a 14: Garanto que o fluxo narrativo continue envolvente e destacarei quaisquer momentos que pareçam lentos ou apressados.
+2. Credibilidade dos personagens e tensão romântica: Analisarei se a conexão emocional e a química se desenvolvem naturalmente e mantêm os leitores presos.
+3. O final: Fornecerei um feedback honesto sobre o impacto emocional e a resolução da história.
+
+Estou totalmente confortável em deixar comentários detalhados e diretos via Google Docs e trabalhar dentro do seu prazo de 7 a 10 dias.
+
+Vamos colaborar para fazer seu romance brilhar!
+
+Atenciosamente,
+Julia`;
+
+let draftIsTranslated = false;
+function toggleDraftTranslation() {
+  const box = document.getElementById('draft-message-box');
+  const btn = document.getElementById('btn-translate-draft');
+  if (draftIsTranslated) {
+    box.value = msgDraftEN;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg> Traduzir para português`;
+  } else {
+    box.value = msgDraftPT;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg> Ver em inglês`;
+  }
+  draftIsTranslated = !draftIsTranslated;
+}
+
+function enviarAbordagem() {
+  const modal = document.getElementById('success-modal');
+  modal.style.display = 'flex';
+  setTimeout(() => {
+    modal.style.display = 'none';
+    go('s1');
+  }, 2200);
+}
+
+function resetFlow(){
+  translated[1]=false;translated[2]=false;translated[3]=false;
+  [1,2,3].forEach(n=>{
+    document.getElementById('txt'+n+'-en').style.display='block';
+    document.getElementById('txt'+n+'-pt').style.display='none';
+  });
+  // reset draft translation
+  draftIsTranslated = false;
+  document.getElementById('draft-message-box').value = msgDraftEN;
+  document.getElementById('btn-translate-draft').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l4 4-4 4M3 12h18"/><path d="M12 3l4 4-4 4"/></svg> Traduzir para português`;
+  
+  // reset genre
+  document.getElementById('grp-genre').querySelectorAll('.option').forEach((o,i)=>{
+    o.classList.toggle('sel',i===0);
+    const r=o.querySelector('.radio');
+    i===0?r.classList.add('chk'):r.classList.remove('chk');
+    if(i!==0)r.innerHTML='';
+  });
+  // reset value
+  document.getElementById('grp-val').querySelectorAll('.option').forEach((o,i)=>{
+    o.classList.toggle('sel',i===1);
+    const r=o.querySelector('.radio');
+    i===1?r.classList.add('chk'):r.classList.remove('chk');
+    if(i!==1)r.innerHTML='';
+  });
+  go('s1');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+========================================
+  AUTO READER — FLUXO 1 (Captacao)
+========================================
+
+COMO ABRIR:
+  - Atalho na Area de Trabalho: "Auto Reader - Fluxo 1"
+  - Ou abra diretamente: auto_reader_flow1.html
+
+ARQUIVOS PRINCIPAIS:
+  auto_reader_flow1.html  → O app completo (HTML + CSS + JS)
+  imgs/                   → Fotos de perfil dos autores e da Julia
+
+FLUXO DO APP:
+  1. Dashboard           → Visao geral + progresso de leitura
+  2. Selecionar conta    → Julia Trindade (Fiverr)
+  3. Escolher genero     → 10 opcoes de nicho
+  4. Faixa de valor      → Mostra quantas propostas serao geradas
+  5. Busca animada       → 4 etapas de carregamento
+  6. Resultados          → 5 autores com foto, texto e botao traduzir
+
+DICAS PARA O VIDEO:
+  - Selecione "US$ 60 - US$ 100" para mostrar 30 propostas
+  - Clique em "Ver propostas" para iniciar a animacao de busca
+  - Use o botao "Traduzir para portugues" em cada autor
+  - Role para ver todos os 5 autores com fotos reais
+
+========================================
+  AUTO READER — FLUXO 2 (Entrega)
+========================================
+
+COMO ABRIR:
+  - Atalho na Area de Trabalho: "Auto Reader - Fluxo 2"
+  - Ou abra diretamente: auto_reader_flow2.html
+
+FLUXO DO APP:
+  1. Dashboard           → Card de "Leitura concluida" em 100% com comissao de US$ 80.
+  2. Relatorios          → Clicar no card abre a tela de PDFs gerados com o principal em destaque e o historico abaixo.
+  3. Enviar Relatorio    → Clicar no PDF principal abre a tela com a mensagem em ingles pre-preenchida.
+  4. Comprovante         → Ao enviar, o botao tem uma animacao e leva para a tela de sucesso confirmando a comissao de US$ 80.
+
+========================================
+  Projeto criado com Antigravity AI
+========================================
