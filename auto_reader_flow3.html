@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Auto Reader — Fluxo 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--g:#2ECC71;--gd:#27AE60;--gl:#E8F8F0;--dark:#1C1C1E;--gray:#6B7280;--border:#E5E7EB;--bg:#F4F5F7;--white:#fff}
+body{font-family:'Inter',sans-serif;background:#dde0e7;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:390px;height:844px;background:var(--bg);border-radius:40px;overflow:hidden;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.28)}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none;flex-direction:column;background:var(--bg);animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+/* Header */
+.header{padding:52px 20px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.header.center{justify-content:center}
+.back{width:36px;height:36px;border-radius:50%;background:var(--white);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.08);color:var(--dark)}
+.logo{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.logo .g{color:var(--g)}
+.logo .d{color:var(--dark)}
+
+/* Welcome banner */
+.welcome{margin:0 16px 16px;background:#E8EAED;border-radius:18px;padding:16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 6px rgba(0,0,0,.06);transition:all .22s ease;cursor:default}
+.welcome-text h2{font-size:15px;font-weight:700;color:var(--dark)}
+.welcome-text p{font-size:12px;color:var(--gray);margin-top:2px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--g);display:inline-block;margin-right:5px}
+
+/* Menu */
+.menu-list{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.menu-card{display:flex;align-items:center;gap:14px;padding:15px 16px;border-radius:18px;cursor:pointer;transition:all .22s ease;background:var(--white);box-shadow:0 1px 5px rgba(0,0,0,.06)}
+.menu-card:hover{box-shadow:0 8px 24px rgba(46,204,113,.18);transform:scale(1.02)}
+.menu-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ic-green{background:var(--gl)}
+.ic-gray{background:#F3F4F6}
+.menu-text{flex:1}
+.menu-text h3{font-size:15px;font-weight:600;color:var(--dark)}
+.menu-text p{font-size:12px;color:var(--gray);margin-top:2px;line-height:1.4}
+.arrow{color:var(--g);font-size:20px;font-weight:700;line-height:1}
+.badge-alert{background:var(--g);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:auto}
+
+/* Section titles */
+.stitle-block{padding:10px 20px 4px}
+.stitle{font-size:18px;font-weight:700;color:var(--dark)}
+.ssub{padding:0 20px 16px;font-size:13px;color:var(--gray)}
+
+/* Client Request Card */
+.request-card{margin:0 16px 16px;background:var(--white);border-radius:20px;padding:16px;box-shadow:0 2px 14px rgba(46,204,113,.15);border:2px solid rgba(46,204,113,.25)}
+.client-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.client-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--g)}
+.client-info{flex:1}
+.client-name{font-size:15px;font-weight:700;color:var(--dark);display:flex;align-items:center;gap:4px}
+.verified{width:14px;height:14px}
+.client-book{font-size:12px;color:var(--gray);margin-top:2px}
+
+.msg-label{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.msg-box{background:#FAFAFA;border:1px solid var(--border);border-radius:12px;padding:14px;font-size:13px;line-height:1.5;color:var(--dark);font-style:italic}
+
+.project-details{display:flex;gap:10px;margin-top:14px}
+.detail-tag{background:var(--gl);color:var(--gd);padding:6px 10px;border-radius:8px;font-size:12px;font-weight:600}
+
+/* Button */
+.main-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 32px);margin:auto 16px 24px;padding:16px;border-radius:14px;border:none;background:var(--g);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(46,204,113,.3)}
+.main-btn:hover{background:var(--gd);transform:translateY(-1px);box-shadow:0 6px 16px rgba(46,204,113,.4)}
+
+/* S3: Painel do Projeto */
+.panel-card{margin:0 16px 16px;background:var(--white);border-radius:20px;padding:20px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
+.panel-top{text-align:center;margin-bottom:24px}
+.book-icon{width:64px;height:64px;border-radius:16px;background:var(--gl);color:var(--g);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.panel-title{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.panel-author{font-size:13px;color:var(--gray)}
+
+.status-box{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.status-ic{color:#D97706}
+.status-text{font-size:13px;font-weight:600;color:#92400E}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.info-item{background:#F3F4F6;padding:12px;border-radius:12px}
+.info-label{font-size:11px;color:var(--gray);text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.info-val{font-size:14px;font-weight:700;color:var(--dark)}
+.info-val.highlight{color:var(--gd)}
+
+/* Card Leitura V2 (Anexo 1) */
+.card-leitura{background:#EAECEF;border-radius:16px;padding:16px 16px 12px;margin:0 16px 16px;cursor:pointer}
+.cl-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.cl-label{color:#10B981;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.cl-label.amber{color:#D97706}
+.cl-badge{background:#FEF3C7;color:#D97706;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.cl-title{font-size:16px;font-weight:700;color:#111827}
+.cl-subtitle{font-size:12px;color:#6B7280;margin-top:2px}
+.cl-middle{background:#FFFFFF;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.cl-bar-bg{background:#F3F4F6;height:8px;border-radius:4px;overflow:hidden;margin-bottom:10px}
+.cl-bar-fill{background:#10B981;height:100%;border-radius:4px;transition:width 1s ease-out}
+.cl-meta{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.cl-pct{font-weight:800;color:#111827}
+.cl-step{color:#6B7280;font-size:12px}
+.cl-footer{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.cl-time{color:#6B7280}
+.cl-time strong{color:#111827;font-weight:700}
+.cl-price{color:#10B981;font-weight:800;font-size:14px}
+
+/* Proposal Card V2 (S-LIST) */
+.prop-card{background:var(--white);border-radius:18px;padding:16px;margin:0 16px 16px;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:pointer;border:1px solid var(--border)}
+.prop-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.prop-author-info{display:flex;gap:12px;align-items:center}
+.prop-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid #E5E7EB}
+.prop-name{font-size:15px;font-weight:700;color:var(--dark);display:flex;align-items:center;gap:4px;margin-bottom:2px}
+.prop-book{font-size:12px;color:var(--gray)}
+.fiverr-logo{font-family:Inter,sans-serif;font-weight:800;font-size:13px;color:#1DBF73;display:flex;align-items:center;gap:3px;padding-top:4px}
+.fiverr-dot{width:5px;height:5px;background:#1DBF73;border-radius:50%}
+.prop-msg{background:#F9FAFB;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;color:#4B5563;font-style:italic;margin-bottom:12px;line-height:1.5}
+.prop-tags{display:flex;gap:8px}
+.prop-tag{background:var(--gl);color:var(--gd);padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700}
+
+/* Request Card V2 (Anexo 2) */
+.req-card-v2{background:var(--white);border:2px solid #A7F3D0;border-radius:18px;padding:18px;margin:0 16px 16px}
+.req-author-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #F3F4F6}
+.req-label{font-size:11px;font-weight:800;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="phone">
+
+<!-- ===== S1: DASHBOARD ===== -->
+<div class="screen active" id="s1">
+  <div class="header center">
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+
+  <div class="welcome">
+    <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0">
+      <img src="imgs/julia_trindade.png" alt="Julia Trindade" style="width:100%;height:100%;object-fit:cover;object-position:top">
+    </div>
+    <div class="welcome-text">
+      <h2>Bem-vinda de volta, Julia Trindade</h2>
+      <p><span class="status-dot"></span>Sua automacao esta ativa e monitorando</p>
+    </div>
+  </div>
+
+  <div class="menu-list">
+    <div class="menu-card">
+      <div class="menu-icon ic-gray">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none"><path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#9CA3AF" stroke-width="5.5" fill="none"/><circle cx="35" cy="34" r="8" fill="#1C1C1E"/><path d="M20 52c0-8.3 6.7-15 15-15 3.2 0 6.2 1 8.6 2.7" stroke="#1C1C1E" stroke-width="4.5" stroke-linecap="round" fill="none"/><circle cx="56" cy="48" r="7.5" stroke="#1C1C1E" stroke-width="4" fill="none"/><line x1="61.5" y1="53.5" x2="66" y2="58" stroke="#1C1C1E" stroke-width="4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="menu-text">
+        <h3>Encontrar Autores</h3>
+        <p>O sistema busca autores que precisam de beta reader automaticamente.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+
+    <div class="menu-card">
+      <div class="menu-icon ic-gray">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none"><path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#9CA3AF" stroke-width="5.5" fill="none"/><rect x="24" y="26" width="22" height="18" rx="3" fill="#1C1C1E"/><line x1="28" y1="31" x2="42" y2="31" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="28" y1="36" x2="42" y2="36" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="28" y1="41" x2="36" y2="41" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="52" cy="42" r="9" fill="#2ECC71"/><path d="M48.5 42l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </div>
+      <div class="menu-text">
+        <h3>Feedback Automatico</h3>
+        <p>A IA analisa o livro e prepara o feedback pronto em ate 24h.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+
+    <!-- Trabalhos Aceitos - CLICÁVEL -->
+    <div class="menu-card" onclick="go('s-list')" style="box-shadow:0 2px 12px rgba(46,204,113,.15); border:2px solid rgba(46,204,113,.25);">
+      <div class="menu-icon ic-green">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none"><path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#2ECC71" stroke-width="5.5" fill="none"/><rect x="26" y="22" width="26" height="32" rx="4" fill="#1C1C1E"/><line x1="31" y1="30" x2="47" y2="30" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="31" y1="36" x2="47" y2="36" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="31" y1="42" x2="40" y2="42" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="52" cy="50" r="11" fill="#2ECC71"/><path d="M47.5 50l3 3 5.5-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </div>
+      <div class="menu-text">
+        <h3>Trabalhos Aceitos</h3>
+        <p>Autores que aceitaram sua abordagem e aguardam feedback.</p>
+      </div>
+      <div class="badge-alert">1 NOVO</div>
+    </div>
+
+    <div class="menu-card">
+      <div class="menu-icon ic-gray">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none"><path d="M40 6C21.2 6 6 19.8 6 36.8c0 9.4 4.6 17.8 11.8 23.4L14 74l13.6-5.4C30.9 69.8 35.4 70.6 40 70.6 58.8 70.6 74 56.8 74 39.8 74 22.8 58.8 9 40 6z" stroke="#9CA3AF" stroke-width="5.5" fill="none"/><rect x="26" y="20" width="22" height="30" rx="4" fill="#1C1C1E"/><line x1="31" y1="28" x2="43" y2="28" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="31" y1="34" x2="43" y2="34" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="31" y1="40" x2="38" y2="40" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="52" cy="50" r="11" fill="#2ECC71" stroke="#F4F5F7" stroke-width="2"/><circle cx="52" cy="50" r="6.5" stroke="#fff" stroke-width="2" fill="none"/><line x1="52" y1="46" x2="52" y2="50.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="52" y1="50.5" x2="55" y2="50.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="menu-text">
+        <h3>Historico de Entregas</h3>
+        <p>Acompanhe feedbacks entregues e seus ganhos acumulados.</p>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+  </div>
+
+  <div class="stitle-block" style="padding-top:16px"><div class="stitle" style="font-size:16px">Em Andamento</div></div>
+
+  <!-- Card 2: NOVO (0%) - Hidden by default -->
+  <div class="card-leitura" id="new-card" style="display:none;" onclick="go('s3')">
+    <div class="cl-header">
+      <div>
+        <div class="cl-label">Iniciando IA</div>
+        <div class="cl-title">The Last Orchard</div>
+        <div class="cl-subtitle">Emily Carter &bull; Romance</div>
+      </div>
+      <div class="cl-badge" style="background:#D1FAE5;color:#065F46">Processando</div>
+    </div>
+    <div class="cl-middle">
+      <div class="cl-bar-bg">
+        <div class="cl-bar-fill" style="width:0%"></div>
+      </div>
+      <div class="cl-meta">
+        <span class="cl-pct" id="new-card-pct">0% concluido</span>
+        <span class="cl-step" id="new-card-step">Preparando modulos...</span>
+      </div>
+    </div>
+    <div class="cl-footer">
+      <div class="cl-time">Entrega prevista: <strong>em 24h</strong></div>
+      <div class="cl-price">~US$ 80</div>
+    </div>
+  </div>
+
+  <!-- Card 1: Existente (67%) -->
+  <div class="card-leitura">
+    <div class="cl-header">
+      <div>
+        <div class="cl-label amber">Leitura em andamento</div>
+        <div class="cl-title">Kingdom of Ashes</div>
+        <div class="cl-subtitle">James Miller &bull; Fantasia</div>
+      </div>
+      <div class="cl-badge">Em analise</div>
+    </div>
+    <div class="cl-middle">
+      <div class="cl-bar-bg">
+        <div class="cl-bar-fill" style="width:67%"></div>
+      </div>
+      <div class="cl-meta">
+        <span class="cl-pct">67% concluido</span>
+        <span class="cl-step">Analisando personagens...</span>
+      </div>
+    </div>
+    <div class="cl-footer">
+      <div class="cl-time">Entrega prevista: <strong>hoje as 19h</strong></div>
+      <div class="cl-price">~US$ 120</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== S-LIST: TRABALHOS ACEITOS ===== -->
+<div class="screen" id="s-list">
+  <div class="header">
+    <button class="back" onclick="go('s1')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+  <div class="stitle-block"><div class="stitle">Trabalhos Aceitos</div></div>
+  <div class="ssub">Propostas aceitas aguardando sua inicializacao.</div>
+
+  <!-- Emily Carter -->
+  <div class="prop-card" onclick="go('s2')" style="border-color:#A7F3D0; box-shadow:0 4px 12px rgba(16,185,129,0.1)">
+    <div class="prop-head">
+      <div class="prop-author-info">
+        <img src="imgs/author_emily.jpg" class="prop-avatar">
+        <div>
+          <div class="prop-name">Emily Carter <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><circle cx="8" cy="8" r="8" fill="#2ECC71"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="prop-book">The Last Orchard &bull; Romance</div>
+        </div>
+      </div>
+      <div class="fiverr-logo">fiverr<div class="fiverr-dot"></div></div>
+    </div>
+    <div class="prop-msg">
+      "Hi Julia! I loved your proposal and your profile. I am looking for thorough feedback on my romance novel..."
+    </div>
+    <div class="prop-tags">
+      <div class="prop-tag">~82.000 palavras</div>
+      <div class="prop-tag" style="background:#ECFDF5;color:#059669">US$ 80</div>
+    </div>
+  </div>
+
+  <!-- Sarah Johnson -->
+  <div class="prop-card" onclick="go('s2')">
+    <div class="prop-head">
+      <div class="prop-author-info">
+        <img src="imgs/author_sarah.jpg" class="prop-avatar">
+        <div>
+          <div class="prop-name">Sarah Johnson <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><circle cx="8" cy="8" r="8" fill="#2ECC71"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="prop-book">Letters to Nobody &bull; Romance</div>
+        </div>
+      </div>
+      <div class="fiverr-logo">fiverr<div class="fiverr-dot"></div></div>
+    </div>
+    <div class="prop-msg">
+      "Hello! I'm looking for a beta reader for my literary romance, a story told through unsent letters..."
+    </div>
+    <div class="prop-tags">
+      <div class="prop-tag" style="background:#F3F4F6;color:#4B5563">~58.000 palavras</div>
+      <div class="prop-tag" style="background:#F3F4F6;color:#4B5563">US$ 65</div>
+    </div>
+  </div>
+
+  <!-- Daniel Hargrove -->
+  <div class="prop-card" onclick="go('s2')">
+    <div class="prop-head">
+      <div class="prop-author-info">
+        <img src="imgs/author_daniel.jpg" class="prop-avatar">
+        <div>
+          <div class="prop-name">Daniel Hargrove <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><circle cx="8" cy="8" r="8" fill="#2ECC71"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="prop-book">Fractured Ground &bull; Thriller</div>
+        </div>
+      </div>
+      <div class="fiverr-logo">fiverr<div class="fiverr-dot"></div></div>
+    </div>
+    <div class="prop-msg">
+      "Hi there! I need a critical eye on my latest thriller. Mostly concerned about the pacing in the final act..."
+    </div>
+    <div class="prop-tags">
+      <div class="prop-tag" style="background:#F3F4F6;color:#4B5563">~92.000 palavras</div>
+      <div class="prop-tag" style="background:#F3F4F6;color:#4B5563">US$ 110</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S2: PROPOSTA ACEITA ===== -->
+<div class="screen" id="s2">
+  <div class="header">
+    <button class="back" onclick="go('s-list')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+
+  <div class="stitle-block">
+    <div class="stitle">Proposta Aceita</div>
+  </div>
+  <div class="ssub">O autor aceitou sua abordagem e enviou o manuscrito.</div>
+
+  <div class="req-card-v2">
+    <div class="req-author-row">
+      <img src="imgs/author_emily.jpg" alt="Emily Carter" class="prop-avatar" style="width:48px;height:48px;border:2px solid #10B981">
+      <div>
+        <div class="prop-name" style="font-size:16px">
+          Emily Carter
+          <svg class="verified" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#10B981"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="prop-book">The Last Orchard &bull; Romance</div>
+      </div>
+    </div>
+
+    <div class="req-label">Mensagem do Autor</div>
+    <div class="prop-msg" style="margin-bottom:16px">
+      "Hi Julia! I loved your proposal and your profile. I am looking for thorough feedback on my romance novel, 'The Last Orchard'. 
+      <br><br>
+      I specifically need you to check the pacing in the middle chapters (around chapter 12-15) and tell me if the emotional connection between the main characters feels genuine. 
+      <br><br>
+      Please let me know if you can start right away!"
+    </div>
+
+    <div class="prop-tags">
+      <div class="prop-tag">~82.000 palavras</div>
+      <div class="prop-tag" style="background:#ECFDF5;color:#059669">Comissao: US$ 80</div>
+    </div>
+  </div>
+
+  <button class="main-btn" onclick="go('s3')">
+    Aceitar Projeto
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </button>
+</div>
+
+<!-- ===== S3: INICIAR RELATÓRIO ===== -->
+<div class="screen" id="s3">
+  <div class="header">
+    <button class="back" onclick="go('s2')">‹</button>
+    <div class="logo"><span class="g">auto</span><span class="d">reader.</span></div>
+  </div>
+
+  <div class="stitle-block">
+    <div class="stitle">Painel do Projeto</div>
+  </div>
+  <div class="ssub">Gerencie a leitura e o relatorio automatico.</div>
+
+  <div class="panel-card">
+    <div class="panel-top">
+      <div class="book-icon" style="padding:0; overflow:hidden;">
+        <img src="imgs/book_cover.png" alt="Book Cover" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+      <div class="panel-title">The Last Orchard</div>
+      <div class="panel-author">por Emily Carter</div>
+    </div>
+
+    <div class="status-box">
+      <svg class="status-ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <div class="status-text">Aguardando inicio da leitura...</div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Genero</div>
+        <div class="info-val">Romance</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Tamanho</div>
+        <div class="info-val">82k Palavras</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Prazo Ideal</div>
+        <div class="info-val">Ate 7 dias</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Comissao</div>
+        <div class="info-val highlight">US$ 80</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="main-btn" onclick="startReading()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    Iniciar Geracao de Relatorio
+  </button>
+</div>
+
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  el.scrollTop=0;
+}
+
+function startReading(){
+  const btn = document.querySelector('#s3 .main-btn');
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Iniciando IA...';
+  btn.style.opacity = '0.8';
+  
+  setTimeout(() => {
+    document.getElementById('new-card').style.display = 'block';
+    go('s1');
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Iniciar Geracao de Relatorio';
+    btn.style.opacity = '1';
+    
+    setTimeout(() => {
+      document.querySelector('#new-card .cl-bar-fill').style.width = '3%';
+      document.getElementById('new-card-pct').textContent = '3% concluido';
+      document.getElementById('new-card-step').textContent = 'Analisando padroes de ritmo...';
+    }, 1000);
+  }, 1200);
+}
+</script>
+</body>
+</html>
